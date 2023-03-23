@@ -1,0 +1,244 @@
+;EQUIPO 4
+;Diego Hernandez  Gonzalez
+;Alexis de Jesus Aguirre Lara
+;Maria del Carmen Gonzalez Gonzalez
+;Athziri Vanessa Rodriguez Esparza
+;Aimee  Pauiina Gutierrez Gomez
+;Jesus Eduardo Gonzalez Martinez
+;04/12/2022 Version 1.0.0
+;Para iniciar el programa ejecutar la funcion (iniciar)
+
+
+(defun iniciar()
+(cargar)
+(SE transtornos) 
+)
+
+(defun pedirN()
+(loop
+(setq opc (read))
+(when(and (numberp opc)(> opc -1)(< opc 2))(return opc))
+)
+)
+
+
+(defun gra(x)
+(setq temp6 0)
+(let (lista '())
+(dolist(e sin)
+ (cond
+  ((equal x e)(if(not(equal (nth (+ temp6 1) sin) NIL))(push (nth (+ temp6 1) sin) lista)))
+)
+(setq temp6 (+ temp6 1))
+)
+lista
+)
+)
+
+(defun grafico()
+(capi:contain (make-instance 
+ 'capi:graph-pane
+ :roots sin
+ :children-function 'gra
+ :node-pinboard-class 'capi:push-button
+ :layout-function :top-down
+)
+ :best-width 500
+ :best-height 400
+)
+)
+
+;Funciones de archivos
+(defun guardar()
+(eliminar)
+(crear)
+)
+
+(defun cargar()
+(load "data.lsp")
+)
+
+ 
+(defun crear()
+(with-open-file (stream "data.lsp" :direction :output)
+(format stream "(setq preguntas '(")
+(dolist(x preguntas)
+ (format stream "~a" (code-char 34))
+ (format stream "~d" x)
+ (format stream "~a" (code-char 34))
+)
+(format stream "))")
+(format stream "(setq transtornos '(")
+(dolist(x transtornos)
+
+ (format stream "(")
+ (format stream "~d" (nth 0 x))
+ 
+ (format stream "(")
+
+ (dolist (x2 (nth 1 x))
+ (format stream "~a" (code-char 34))
+ (format stream "~d" x2)
+ (format stream "~a" (code-char 34))
+)
+ 
+ (format stream ")")
+
+ (format stream ")")
+)
+(format stream "))")
+)
+)
+
+(defun eliminar()
+(setq p (probe-file "data.lsp")) 
+(delete-file p) 
+)
+
+;Motor de aprendizaje
+(defun agregar()
+ (write "Inserta el nombre del transtorno: ")
+ (setq nombre (read-line))
+ (setq lista1 '())
+ (setq lista2 '())
+ (push nombre lista1)
+ (setq temp2 0)
+ (loop
+  (format t "~% ¿Deseas utilizar alguna de las preguntas ya existentes para este transtorno? 1.-Si 0.-Agregar pregunta propia ")
+  (if(equal (pedirN) 1)
+  (push (agregarPregunta) lista2)
+  (progn
+   (format t "~% Inserta tu pregunta: ")
+   (setq pregunta (read-line))
+   (push pregunta preguntas)
+   (push pregunta lista2)))
+  (write "¿Agregar otra pregunta?: 1.-Si 0.-No")
+  (setq temp2 (pedirN))
+(when (equal temp2 0)(progn (setq lista (cons lista1 (list lista2)))(push lista transtornos)(return lista))))
+)
+
+
+
+(defun agregarPregunta ()
+  (format t "~% Estas son las preguntas existentes: ")
+  (terpri)
+  (setq nP 1)
+  (dolist (x preguntas)
+   (write nP)
+   (write ".-")
+   (write x)
+   (terpri)
+   (setq nP (+ nP 1))
+)
+  (format t "~%Ingresa el numero de pregunta que deseas agregar: ")
+  (setq opc (nth (- (read) 1) preguntas))
+  opc
+)
+
+
+(defun reiniciar()
+ (setq sin '())
+ (format t "~% ¿Deseas reniciar el programa? 1.-Si 0.-No")
+ (if(equal (pedirN) 1) 
+  (SE transtornos)
+  (progn
+   (write "Gracias por utilizar el programa")
+   (guardar)))
+)
+
+(setq sin '())
+(setq umbral 2)
+;Sistema Experto
+(defun SE(trans)
+(setq bandera 0)
+(setq temp (nth 1 (nth 0 trans)))
+(setq temp4 0)
+(setq opc NIL)
+(setq pivote NIL)
+(if(equal temp NIL)
+ (progn 
+  (format t "~% Parece que estas sano, ¿Te gustaria agregar algun transtorno? 1.-Si 0.-No ")
+  (setq temp3 (pedirN))
+  (if(equal temp3 1)
+   (agregar))))
+(catch 'salida
+(dolist(x temp)
+ (format t "~% Pregunta: ~d" x)
+ (format t "~% 1.-Si 0.-No    ")
+ (setq opc (pedirN))
+ (cond 
+  ((equal opc 1)
+   (progn 
+    (push x sin))))
+ (if (equal opc 0) 
+   (setq bandera (+ bandera 1))
+ (if(equal temp4 0)
+  (progn
+   (setq pivote x)
+   (setq temp4 (+ temp4 1)))))
+(when(equal bandera umbral)(throw 'salida 1)))
+)
+(cond
+ (
+  (equal bandera 2) 
+   (progn (pop trans)(setq transT (sort-by-pivote trans sin))(SE transT))
+ )
+ (
+  (equal (car (nth 0 trans)) NIL)
+   (progn (format t "~% Gracias por utilizar el programa")(reiniciar))
+ )
+ (
+  (not(equal bandera 2))
+   (progn (format t "~% Parece que tienes : ~d" (car (nth 0 trans)))(grafico)(reiniciar))
+ )
+)
+)
+
+(setq li '(((1)("A"))((2)("B"))((3)("A"))))
+
+
+
+;Motor de inferencia
+(defun sort-by-pivote(lista resp)
+(terpri)
+(setq lista-by-pivote '())
+(dolist (x lista)
+ (dolist (x1 (nth 1 x))
+  (if(equal x1 (nth 0 resp))
+   (push x lista-by-pivote))
+)
+)
+(dolist (x lista)
+(setq temp5 0)
+ (dolist (x1 (nth 1 x))
+  (if(equal x1 (nth 0 resp))
+   (setq temp5 1))
+)
+(if(equal temp5 0)
+ (push x lista-by-pivote))
+)
+(setq lista-by-pivote (reverse lista-by-pivote))
+(remove-pivote lista-by-pivote sin)
+)
+
+
+
+
+(defun remove-pivote(lista respuestas)
+(setq lista-sin-pivote '())
+(dolist(x lista)
+(setq nombre (nth 0 x))
+(setq sintomas '())
+ (dolist (x2 (nth 1 x))
+  (if(not(equal (nth 0 respuestas) x2))
+   (push x2 sintomas))
+)
+(push (cons nombre (list (reverse sintomas))) lista-sin-pivote)
+)
+(setq lista-sin-pivote (reverse lista-sin-pivote))
+(pop respuestas)
+(cond 
+((not(equal (nth 0 respuestas) NIL)) (remove-pivote lista-sin-pivote respuestas))
+)
+lista-sin-pivote
+)
